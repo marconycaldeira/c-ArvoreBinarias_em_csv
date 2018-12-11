@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+//estrutura pessoa
 typedef struct {
 	char cpf[12];
 	char nome[51];
@@ -13,13 +13,13 @@ typedef struct {
 	char cidade[50];
 	char uf[3];
 } Pessoa;
-
+//arvore de clientes
 typedef struct {
 	Pessoa cliente;
 	struct Clientes *e;
 	struct Clientes *d;
 } Clientes;
-
+//quebra a linha do arquivo csv em substrings, utilizando como critério de corte o delimitador informado
 int explode(char ***arr_ptr, char *str, char delimiter){
 	char *src = str, *end, *dst;
 	char **arr;
@@ -48,6 +48,7 @@ int explode(char ***arr_ptr, char *str, char delimiter){
 
 	return size;
 }
+//insere recusivamente, comparando-se o cpf
 void inserir(Clientes **clientes, Pessoa pessoa) {
 	Clientes *novoCliente;
 	novoCliente = (Clientes *) malloc( sizeof(Clientes) );
@@ -69,7 +70,7 @@ void inserir(Clientes **clientes, Pessoa pessoa) {
 	}
 
 }
-
+//imprime recusivamente conforme critério de ordenação de arvore
 void imprimir(Clientes *clientes) {
 	if(clientes != NULL) {
 		imprimir(clientes->e);
@@ -85,9 +86,10 @@ void imprimir(Clientes *clientes) {
 		imprimir(clientes->d);
 	}
 }
-Clientes *MenorEsquerda(Clientes **clientes) {
+//utiliza o criterio de menor da direita para exclucao
+Clientes *MenorDireita(Clientes **clientes) {
 	if((*clientes)->e != NULL) {
-		return MenorEsquerda(&(*clientes)->e);
+		return MenorDireita(&(*clientes)->e);
 	} else {
 		Clientes *aux = *clientes;
 		if((*clientes)->d != NULL) {
@@ -98,6 +100,7 @@ Clientes *MenorEsquerda(Clientes **clientes) {
 		return aux;
 	}
 }
+//funcao de exclusao que utiliza o criterio de escolher o menor da direita
 Clientes excluir(Clientes **clientes, Pessoa pessoa) {
 	if(*clientes == NULL) {
 		printf("CLIENTE INEXISTENTE!!!\n");
@@ -129,7 +132,7 @@ Clientes excluir(Clientes **clientes, Pessoa pessoa) {
 					clienteAuxiliar = NULL;
 				}
 				else {
-					clienteAuxiliar = MenorEsquerda(&(*clientes)->d);
+					clienteAuxiliar = MenorDireita(&(*clientes)->d);
 					clienteAuxiliar->e = (*clientes)->e;
 					clienteAuxiliar->d = (*clientes)->d;
 					(*clientes)->e = (*clientes)->d = NULL;
@@ -142,6 +145,7 @@ Clientes excluir(Clientes **clientes, Pessoa pessoa) {
 	}
 	printf("CLIENTE EXCLUIDO!!!\n");
 }
+//busca comparando-se pelo cpf
 void buscar(Clientes *clientes, Pessoa pessoa) {
 	if (clientes == NULL) {
 		printf("CLIENTE INEXISTENTE!!!\n");
@@ -166,6 +170,9 @@ void buscar(Clientes *clientes, Pessoa pessoa) {
 
 	}
 }
+//exporta para arquivo csv
+//primeiro é criado uma string da linha, obedecendo a construcao de colunas separadas por ponto e virgula e fins de linha com quebra de linha
+//note que o criterio de ordenaçao de escrita é o de pre ordem
 void exportar(Clientes *clientes, FILE *arquivo) {
 	if(clientes != NULL) {
 		if(arquivo == NULL) {
@@ -199,6 +206,7 @@ void exportar(Clientes *clientes, FILE *arquivo) {
 	}
 
 }
+//acessa o arquivo csv linha a linha, quebra a string montada da linha em várias outras e recria a arvore
 void importar(Clientes **clientes, FILE *arquivo) {
 	char linha[250];
 	Pessoa pessoa;
